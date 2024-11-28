@@ -19,8 +19,6 @@ def load_lottie_url(url):
         st.error("Invalid JSON returned from Lottie URL.")
         return None
 
-
-
 # Persistent User Storage (In-Memory for now)
 users_db = {}
 
@@ -134,12 +132,16 @@ elif auth_option == "Sign In":
 
 # Main App Page - Blood Bank Finder
 st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
-st_lottie(lottie_blood_drop, height=200)  # Displaying Lottie animation
 
-# Blood Bank Finder Section
+# Show spinner with 5-second delay instead of Lottie animation
+with st.spinner("Loading... Please wait."):
+    time.sleep(5)  # Replace the problematic Lottie animation with a loading spinner
+
+# Blood Bank Finder Section continues...
 st.title("Find Blood Banks in Karachi")
 
-# Rest of your code continues unchanged...
+# Remaining code continues unchanged...
+
 
 
 # Data for Blood Banks with 20 Locations
