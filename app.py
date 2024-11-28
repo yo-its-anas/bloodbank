@@ -5,18 +5,16 @@ import requests
 import random
 import string
 import time
+from streamlit_lottie import st_lottie  # Importing Lottie
 
-def load_lottie_url(url: str):
+# Function to load Lottie animation
+def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
-# Load the Lottie animation
-lottie_blood_drop = load_lottie_url("https://assets7.lottiefiles.com/packages/lf20_7hrmm3pl.json")
-
-# Show the Lottie animation with height 200px
-st_lottie(lottie_blood_drop, height=200)
+lottie_blood_drop = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_vsy6d1tz.json")  # Blood drop animation
 
 # Persistent User Storage (In-Memory for now)
 users_db = {}
@@ -131,10 +129,13 @@ elif auth_option == "Sign In":
 
 # Main App Page - Blood Bank Finder
 st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
-st_lottie(lottie_blood_drop, height=200)
+st_lottie(lottie_blood_drop, height=200)  # Displaying Lottie animation
 
 # Blood Bank Finder Section
 st.title("Find Blood Banks in Karachi")
+
+# Rest of your code continues unchanged...
+
 
 # Data for Blood Banks with 20 Locations
 blood_banks = pd.DataFrame([
