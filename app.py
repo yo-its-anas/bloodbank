@@ -14,7 +14,13 @@ def load_lottie_url(url):
         return None
     return r.json()
 
-lottie_blood_drop = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_vsy6d1tz.json")  # Blood drop animation
+lottie_blood_drop = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_vsy6d1tz.json")
+
+if not lottie_blood_drop:
+    st.error("❌ Failed to load Lottie animation. Please check the URL.")
+else:
+    st_lottie(lottie_blood_drop, height=200)
+
 
 # Persistent User Storage (In-Memory for now)
 users_db = {}
