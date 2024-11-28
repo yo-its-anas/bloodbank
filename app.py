@@ -131,16 +131,53 @@ elif auth_option == "Sign In":
             st.sidebar.error("❌ Invalid Username or Password!")
 
 # Main App Page - Blood Bank Finder
+# The code before this line remains unchanged...
+
+# Main App Page - Blood Bank Finder
 st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
 
-# Show spinner with 5-second delay instead of Lottie animation
-with st.spinner("Loading... Please wait."):
-    time.sleep(5)  # Replace the problematic Lottie animation with a loading spinner
+# Removed automatic Lottie animation as per new UI guidelines
+lottie_loading_ring = load_lottie_url("https://assets9.lottiefiles.com/private_files/lf30_editor_nueh7zpx.json")
 
-# Blood Bank Finder Section continues...
 st.title("Find Blood Banks in Karachi")
 
-# Remaining code continues unchanged...
+# User Input for Location and Blood Group
+user_location = st.selectbox("Select Your Location", blood_banks['location'].unique())
+selected_blood_group = st.selectbox("Select Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+
+# Button to start finding blood banks
+if st.button("Find Blood Banks"):
+    with st.spinner("⏳ Finding blood banks..."):
+        time.sleep(5)  # 5-second delay to simulate loading
+    # Display Blood Banks Matching the Criteria
+    st.markdown("#### Available Blood Banks:")
+    
+    filtered_banks = blood_banks[blood_banks['blood_groups'].apply(lambda x: selected_blood_group in x)]
+    
+    if filtered_banks.empty:
+        st.write("❌ No blood banks available for the selected blood group.")
+    else:
+        for index, bank in filtered_banks.iterrows():
+            # Calculate distance from user's location (for simplicity, assume the user is in the center)
+            user_coords = (24.8607, 67.0011)  # Karachi's approximate center coordinates
+            bank_coords = bank['coordinates']
+            distance = geopy_distance.distance(user_coords, bank_coords).km
+            
+            # Blood Bank Card with border for clarity
+            st.markdown(
+                f"""
+                <div style="border: 2px solid #ff4c4c; border-radius: 10px; padding: 15px; margin: 15px;">
+                    <h3 style="color: #ff4c4c;">{bank['name']} - {bank['location']}</h3>
+                    <p>📍 Coordinates: {bank['coordinates']}</p>
+                    <p>🩸 Blood Groups Available: {', '.join(bank['blood_groups'])}</p>
+                    <p><strong>Distance:</strong> {distance:.2f} km</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+# The rest of your code continues unchanged...
+
 
 
 
