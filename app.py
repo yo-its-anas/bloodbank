@@ -67,11 +67,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Sidebar for user authentication
-st.sidebar.title("🔒 User Authentication")
-auth_option = st.sidebar.radio("Navigate", ["Sign In", "Sign Up"])
+# Sidebar for optional user authentication
+st.sidebar.title("🔒 Optional User Authentication")
+auth_option = st.sidebar.radio("Navigate", ["Sign In", "Sign Up", "Skip"])
 
-# Authentication Logic
 if auth_option == "Sign Up":
     st.sidebar.header("Create Your Account")
     with st.sidebar.form("signup_form"):
@@ -108,55 +107,55 @@ elif auth_option == "Sign In":
         else:
             st.sidebar.error("❌ Invalid Username or Password!")
 
-# Main App Page
+# Main App Page - Blood Bank Finder
+st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
+st_lottie(lottie_animation, height=200)
+
+# Blood Bank Finder Section
+st.title("Find Blood Banks in Karachi")
+
+# Data for Blood Banks with 20 Locations
+blood_banks = pd.DataFrame([
+    {"name": "Central Blood Bank", "location": "Saddar", "coordinates": (24.8607, 67.0011), "blood_groups": ["A+", "O+"]},
+    {"name": "City Blood Bank", "location": "Clifton", "coordinates": (24.8138, 67.0300), "blood_groups": ["B+", "AB+"]},
+    {"name": "Fatimid Foundation", "location": "North Nazimabad", "coordinates": (24.9425, 67.0728), "blood_groups": ["A-", "O+"]},
+    {"name": "Indus Hospital", "location": "Korangi", "coordinates": (24.8205, 67.1279), "blood_groups": ["O-", "B+"]},
+    {"name": "Liaquat National Hospital", "location": "Gulshan-e-Iqbal", "coordinates": (24.9215, 67.0954), "blood_groups": ["A+", "AB-"]},
+    {"name": "Aga Khan University Hospital", "location": "Karachi University", "coordinates": (24.8256, 67.0465), "blood_groups": ["O-", "AB+"]},
+    {"name": "The Blood Bank", "location": "Ferozabad", "coordinates": (24.8880, 67.0708), "blood_groups": ["A-", "B-"]},
+    {"name": "JPMC Blood Bank", "location": "Saddar", "coordinates": (24.8556, 67.0092), "blood_groups": ["B+", "O+"]},
+    {"name": "Karachi Blood Bank", "location": "Korangi", "coordinates": (24.8321, 67.0731), "blood_groups": ["O-", "A+"]},
+    {"name": "Pakistan Red Crescent", "location": "Karachi City", "coordinates": (24.8772, 67.0240), "blood_groups": ["AB-", "O+"]},
+    {"name": "Sheikh Zayed Hospital", "location": "Abul Hasan Ispahani Road", "coordinates": (24.9402, 67.1212), "blood_groups": ["A-", "AB+"]},
+    {"name": "Quaid-e-Azam Blood Bank", "location": "Jamshed Road", "coordinates": (24.8700, 67.0142), "blood_groups": ["A+", "B+"]},
+    {"name": "National Blood Bank", "location": "Hassan Square", "coordinates": (24.8552, 67.0564), "blood_groups": ["O-", "A+"]},
+    {"name": "Ziauddin Blood Bank", "location": "North Karachi", "coordinates": (24.9644, 67.0599), "blood_groups": ["AB+", "B+"]},
+    {"name": "Holy Family Blood Bank", "location": "Naya Nazimabad", "coordinates": (24.9271, 67.0505), "blood_groups": ["O+", "AB-"]},
+    {"name": "Tahir Blood Bank", "location": "Gulistan-e-Johar", "coordinates": (24.9286, 67.1201), "blood_groups": ["B-", "O+"]},
+    {"name": "Pakistan Institute of Blood Transfusion", "location": "Saddar", "coordinates": (24.8522, 67.0202), "blood_groups": ["A-", "B+"]},
+    {"name": "Sindh Blood Transfusion Authority", "location": "Karachi", "coordinates": (24.9030, 67.0501), "blood_groups": ["AB-", "O+"]},
+])
+
+# User Input for Blood Bank Finder (Always Visible)
+with st.form("blood_bank_form"):
+    location = st.selectbox("📍 Select Your Location", blood_banks["location"].unique())
+    blood_group = st.selectbox("🩸 Select Required Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+    submitted = st.form_submit_button("🔍 Find Blood Bank")
+
+if submitted:
+    st.markdown(f"### Blood Banks in **{location}** for **{blood_group}**")
+    filtered_banks = blood_banks[blood_banks['location'] == location]
+    available_banks = filtered_banks[filtered_banks['blood_groups'].apply(lambda x: blood_group in x)]
+    
+    if available_banks.empty:
+        st.write("❌ No blood banks available with this blood group.")
+    else:
+        for index, bank in available_banks.iterrows():
+            st.markdown(f"#### {bank['name']} - {bank['location']}")
+            st.write(f"📍 Coordinates: {bank['coordinates']}")
+            st.write("🩸 Blood Groups Available: " + ", ".join(bank['blood_groups']))
+            st.write("---")
+
+# Optional Log Out Button if Logged In
 if "logged_in_user" in st.session_state:
-    st.markdown(f"### Welcome back, **{st.session_state['logged_in_user']}**! 🎉")
-    st_lottie(lottie_animation, height=200)
-
-    # Blood Bank Finder Section
-    st.title("Karachi Blood Bank Finder 🩸")
-
-    # Data for Blood Banks with 20 Locations
-    blood_banks = pd.DataFrame([
-        {"name": "Central Blood Bank", "location": "Saddar", "coordinates": (24.8607, 67.0011), "blood_groups": ["A+", "O+"]},
-        {"name": "City Blood Bank", "location": "Clifton", "coordinates": (24.8138, 67.0300), "blood_groups": ["B+", "AB+"]},
-        {"name": "Fatimid Foundation", "location": "North Nazimabad", "coordinates": (24.9425, 67.0728), "blood_groups": ["A-", "O+"]},
-        {"name": "Indus Hospital", "location": "Korangi", "coordinates": (24.8205, 67.1279), "blood_groups": ["O-", "B+"]},
-        {"name": "Liaquat National Hospital", "location": "Gulshan-e-Iqbal", "coordinates": (24.9215, 67.0954), "blood_groups": ["A+", "AB-"]},
-        {"name": "Aga Khan University Hospital", "location": "Karachi University", "coordinates": (24.8256, 67.0465), "blood_groups": ["O-", "AB+"]},
-        {"name": "The Blood Bank", "location": "Ferozabad", "coordinates": (24.8880, 67.0708), "blood_groups": ["A-", "B-"]},
-        {"name": "JPMC Blood Bank", "location": "Saddar", "coordinates": (24.8556, 67.0092), "blood_groups": ["B+", "O+"]},
-        {"name": "Karachi Blood Bank", "location": "Korangi", "coordinates": (24.8321, 67.0731), "blood_groups": ["O-", "A+"]},
-        {"name": "Pakistan Red Crescent", "location": "Karachi City", "coordinates": (24.8772, 67.0240), "blood_groups": ["AB-", "O+"]},
-        {"name": "Sheikh Zayed Hospital", "location": "Abul Hasan Ispahani Road", "coordinates": (24.9402, 67.1212), "blood_groups": ["A-", "AB+"]},
-        {"name": "Quaid-e-Azam Blood Bank", "location": "Jamshed Road", "coordinates": (24.8700, 67.0142), "blood_groups": ["A+", "B+"]},
-        {"name": "National Blood Bank", "location": "Hassan Square", "coordinates": (24.8552, 67.0564), "blood_groups": ["O-", "A+"]},
-        {"name": "Ziauddin Blood Bank", "location": "North Karachi", "coordinates": (24.9644, 67.0599), "blood_groups": ["AB+", "B+"]},
-        {"name": "Holy Family Blood Bank", "location": "Naya Nazimabad", "coordinates": (24.9271, 67.0505), "blood_groups": ["O+", "AB-"]},
-        {"name": "Tahir Blood Bank", "location": "Gulistan-e-Johar", "coordinates": (24.9286, 67.1201), "blood_groups": ["B-", "O+"]},
-        {"name": "Pakistan Institute of Blood Transfusion", "location": "Saddar", "coordinates": (24.8522, 67.0202), "blood_groups": ["A-", "B+"]},
-        {"name": "Sindh Blood Transfusion Authority", "location": "Karachi", "coordinates": (24.9030, 67.0501), "blood_groups": ["AB-", "O+"]},
-    ])
-
-    # User Input for Blood Bank Finder
-    with st.form("blood_bank_form"):
-        location = st.selectbox("📍 Select Your Location", blood_banks["location"].unique())
-        blood_group = st.selectbox("🩸 Select Required Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
-        submitted = st.form_submit_button("🔍 Find Blood Bank")
-
-    if submitted:
-        st.markdown(f"### Blood Banks in **{location}** for **{blood_group}**")
-        filtered_banks = blood_banks[blood_banks['location'] == location]
-        available_banks = filtered_banks[filtered_banks['blood_groups'].apply(lambda x: blood_group in x)]
-        
-        if available_banks.empty:
-            st.write("❌ No blood banks available with this blood group.")
-        else:
-            for index, bank in available_banks.iterrows():
-                st.markdown(f"#### {bank['name']} - {bank['location']}")
-                st.write(f"📍 Coordinates: {bank['coordinates']}")
-                st.write("🩸 Blood Groups Available: " + ", ".join(bank['blood_groups']))
-                st.write("---")
-
-else:
-    st.markdown("Please sign in to access the app.")
+    st.sidebar.button("Log Out", on_click=lambda: st.session_state.pop("logged_in_user"))
