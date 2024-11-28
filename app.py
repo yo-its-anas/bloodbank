@@ -5,19 +5,7 @@ import requests
 import random
 import string
 import time
-from streamlit_lottie import st_lottie  # Importing Lottie
-
-def load_lottie_url(url):
-    try:
-        r = requests.get(url)
-        r.raise_for_status()  # Raise an error for any HTTP issues
-        return r.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error fetching Lottie animation: {e}")
-        return None
-    except ValueError:
-        st.error("Invalid JSON returned from Lottie URL.")
-        return None
+import json
 
 # Persistent User Storage (In-Memory for now)
 users_db = {}
@@ -25,6 +13,15 @@ users_db = {}
 # Generate Random Username
 def generate_username(name):
     return name.lower().replace(" ", "") + ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+
+# Lottie animation for the header
+def load_lottieurl(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None
+    return response.json()
+
+lottie_blood_bank = load_lottieurl("https://assets2.lottiefiles.com/packages/lf20_bx5dzv62.json")  # Lottie animation
 
 # Set page configuration
 st.set_page_config(page_title="Karachi Blood Bank Finder", layout="wide")
@@ -131,57 +128,11 @@ elif auth_option == "Sign In":
             st.sidebar.error("❌ Invalid Username or Password!")
 
 # Main App Page - Blood Bank Finder
-# The code before this line remains unchanged...
-
-# Main App Page - Blood Bank Finder
-st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
-
-# Removed automatic Lottie animation as per new UI guidelines
-lottie_loading_ring = load_lottie_url("https://assets9.lottiefiles.com/private_files/lf30_editor_nueh7zpx.json")
-
 st.title("Find Blood Banks in Karachi")
 
+st.json(lottie_blood_bank)  # Displaying the Lottie animation
+
 # User Input for Location and Blood Group
-user_location = st.selectbox("Select Your Location", blood_banks['location'].unique())
-selected_blood_group = st.selectbox("Select Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
-
-# Button to start finding blood banks
-if st.button("Find Blood Banks"):
-    with st.spinner("⏳ Finding blood banks..."):
-        time.sleep(5)  # 5-second delay to simulate loading
-    # Display Blood Banks Matching the Criteria
-    st.markdown("#### Available Blood Banks:")
-    
-    filtered_banks = blood_banks[blood_banks['blood_groups'].apply(lambda x: selected_blood_group in x)]
-    
-    if filtered_banks.empty:
-        st.write("❌ No blood banks available for the selected blood group.")
-    else:
-        for index, bank in filtered_banks.iterrows():
-            # Calculate distance from user's location (for simplicity, assume the user is in the center)
-            user_coords = (24.8607, 67.0011)  # Karachi's approximate center coordinates
-            bank_coords = bank['coordinates']
-            distance = geopy_distance.distance(user_coords, bank_coords).km
-            
-            # Blood Bank Card with border for clarity
-            st.markdown(
-                f"""
-                <div style="border: 2px solid #ff4c4c; border-radius: 10px; padding: 15px; margin: 15px;">
-                    <h3 style="color: #ff4c4c;">{bank['name']} - {bank['location']}</h3>
-                    <p>📍 Coordinates: {bank['coordinates']}</p>
-                    <p>🩸 Blood Groups Available: {', '.join(bank['blood_groups'])}</p>
-                    <p><strong>Distance:</strong> {distance:.2f} km</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-# The rest of your code continues unchanged...
-
-
-
-
-# Data for Blood Banks with 20 Locations
 blood_banks = pd.DataFrame([
     {"name": "Central Blood Bank", "location": "Saddar", "coordinates": (24.8607, 67.0011), "blood_groups": ["A+", "O+"]},
     {"name": "City Blood Bank", "location": "Clifton", "coordinates": (24.8138, 67.0300), "blood_groups": ["B+", "AB+"]},
@@ -203,38 +154,26 @@ blood_banks = pd.DataFrame([
     {"name": "Sindh Blood Transfusion Authority", "location": "Karachi", "coordinates": (24.9030, 67.0542), "blood_groups": ["A+", "B+"]},
     {"name": "Zainab Blood Bank", "location": "Korangi", "coordinates": (24.8231, 67.1189), "blood_groups": ["O-", "A+"]},
     {"name": "Dawood Blood Bank", "location": "Clifton", "coordinates": (24.8052, 67.0321), "blood_groups": ["AB-", "B+"]},
+
 ])
 
-# User Input for Location and Blood Group
 user_location = st.selectbox("Select Your Location", blood_banks['location'].unique())
 selected_blood_group = st.selectbox("Select Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
 
-# Simulate delay before showing results
-with st.spinner("⏳ Finding blood banks..."):
-    time.sleep(5)  # 5-second delay to simulate loading
-
-# Display Blood Banks Matching the Criteria
-st.markdown("#### Available Blood Banks:")
-
-filtered_banks = blood_banks[blood_banks['blood_groups'].apply(lambda x: selected_blood_group in x)]
-
-if filtered_banks.empty:
-    st.write("❌ No blood banks available for the selected blood group.")
-else:
-    for index, bank in filtered_banks.iterrows():
-        # Calculate distance from user's location (for simplicity, assume the user is in the center)
-        user_coords = (24.8607, 67.0011)  # Karachi's approximate center coordinates
-        bank_coords = bank['coordinates']
-        distance = geopy_distance.distance(user_coords, bank_coords).km
-        
-        # Blood Bank Card
-        with st.expander(f"{bank['name']} - {bank['location']}"):
-            st.markdown(f"#### {bank['name']}")
-            st.write(f"📍 Coordinates: {bank['coordinates']}")
-            st.write(f"🩸 Blood Group Available: {', '.join(bank['blood_groups'])}")
-            st.markdown(f"**Distance**: {distance:.2f} km")
-            st.write("---")
-
-# Optional Log Out Button if Logged In
-if "logged_in_user" in st.session_state:
-    st.sidebar.button("Log Out", on_click=lambda: st.session_state.pop("logged_in_user"))
+if st.button("Find Blood Banks"):
+    filtered_banks = blood_banks[blood_banks['blood_groups'].apply(lambda x: selected_blood_group in x)]
+    if filtered_banks.empty:
+        st.write("❌ No blood banks available for the selected blood group.")
+    else:
+        for index, bank in filtered_banks.iterrows():
+            distance = geopy_distance.distance((24.8607, 67.0011), bank['coordinates']).km
+            st.markdown(
+                f"""
+                <div style="border: 2px solid #ff4c4c; border-radius: 10px; padding: 15px;">
+                    <h3 style="color: #ff4c4c;">{bank['name']} - {bank['location']}</h3>
+                    <p>🩸 Available Groups: {', '.join(bank['blood_groups'])}</p>
+                    <p><strong>Distance:</strong> {distance:.2f} km</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
