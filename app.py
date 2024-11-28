@@ -7,19 +7,18 @@ import string
 import time
 from streamlit_lottie import st_lottie  # Importing Lottie
 
-# Function to load Lottie animation
 def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url)
+        r.raise_for_status()  # Raise an error for any HTTP issues
+        return r.json()
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching Lottie animation: {e}")
         return None
-    return r.json()
+    except ValueError:
+        st.error("Invalid JSON returned from Lottie URL.")
+        return None
 
-lottie_blood_drop = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_vsy6d1tz.json")
-
-if not lottie_blood_drop:
-    st.error("❌ Failed to load Lottie animation. Please check the URL.")
-else:
-    st_lottie(lottie_blood_drop, height=200)
 
 
 # Persistent User Storage (In-Memory for now)
