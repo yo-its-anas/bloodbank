@@ -6,14 +6,17 @@ import random
 import string
 import time
 
-# Function to load Lottie animation
-def load_lottie_url(url):
+def load_lottie_url(url: str):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
-lottie_blood_drop = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_vsy6d1tz.json")  # Blood drop animation
+# Load the Lottie animation
+lottie_blood_drop = load_lottie_url("https://assets7.lottiefiles.com/packages/lf20_7hrmm3pl.json")
+
+# Show the Lottie animation with height 200px
+st_lottie(lottie_blood_drop, height=200)
 
 # Persistent User Storage (In-Memory for now)
 users_db = {}
