@@ -99,13 +99,14 @@ elif auth_option == "Sign In":
         signin_submit = st.form_submit_button("Sign In")
 
     if signin_submit:
-        valid_user = any(user["username"] == username_input and user["password"] == password_input for user in users_db.values())
-        if valid_user:
+        # Dummy validation: Accept any non-empty username and password
+        if username_input and password_input:
             st.session_state["logged_in_user"] = username_input
-            st.sidebar.success(f"👋 Welcome back, {username_input}!")
+            st.sidebar.success(f"👋 Welcome, {username_input}!")
+            st.markdown(f"## Hello {username_input}, welcome to the Karachi Blood Bank Finder! 😊")
             st.sidebar.button("Log Out", on_click=lambda: st.session_state.pop("logged_in_user"))
         else:
-            st.sidebar.error("❌ Invalid Username or Password!")
+            st.sidebar.error("❌ Please enter a valid Username and Password.")
 
 # Main App Page - Blood Bank Finder
 st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
@@ -153,9 +154,5 @@ if submitted:
         for index, bank in available_banks.iterrows():
             st.markdown(f"#### {bank['name']} - {bank['location']}")
             st.write(f"📍 Coordinates: {bank['coordinates']}")
-            st.write("🩸 Blood Groups Available: " + ", ".join(bank['blood_groups']))
+            st.write(f"🩸 Available Blood Groups: {', '.join(bank['blood_groups'])}")
             st.write("---")
-
-# Optional Log Out Button if Logged In
-if "logged_in_user" in st.session_state:
-    st.sidebar.button("Log Out", on_click=lambda: st.session_state.pop("logged_in_user"))
