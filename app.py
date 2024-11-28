@@ -1,11 +1,19 @@
 import streamlit as st
 import pandas as pd
 import geopy.distance as geopy_distance
+from streamlit_lottie import st_lottie
 import requests
 import random
 import string
-import time
-import json
+
+# Function to load Lottie animation
+def load_lottie_url(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+lottie_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_tfb3estd.json")
 
 # Persistent User Storage (In-Memory for now)
 users_db = {}
@@ -13,15 +21,6 @@ users_db = {}
 # Generate Random Username
 def generate_username(name):
     return name.lower().replace(" ", "") + ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
-
-# Lottie animation for the header
-def load_lottieurl(url):
-    response = requests.get(url)
-    if response.status_code != 200:
-        return None
-    return response.json()
-
-lottie_blood_bank = load_lottieurl("https://assets2.lottiefiles.com/packages/lf20_bx5dzv62.json")  # Lottie animation
 
 # Set page configuration
 st.set_page_config(page_title="Karachi Blood Bank Finder", layout="wide")
@@ -31,7 +30,7 @@ st.markdown("""
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f7f7f7;
+            background-color: #f0f0f0;
         }
         .card {
             background-color: #ffffff;
@@ -41,7 +40,7 @@ st.markdown("""
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
         .card h3 {
-            color: #ff4c4c;
+            color: #1e90ff;
             font-size: 24px;
         }
         .card p {
@@ -49,40 +48,21 @@ st.markdown("""
         }
         .header {
             text-align: center;
-            color: #ff4c4c;
+            color: #1e90ff;
             font-size: 36px;
             margin-top: 20px;
         }
         .icon {
-            color: #ff4c4c;
+            color: #1e90ff;
         }
         .button {
-            background-color: #ff4c4c;
+            background-color: #1e90ff;
             color: white;
             border-radius: 5px;
             padding: 10px 20px;
         }
         .button:hover {
-            background-color: #e00000;
-        }
-        .blood-bank-box {
-            background-color: #fff0f0;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .blood-bank-header {
-            color: #ff4c4c;
-            font-size: 22px;
-        }
-        .blood-bank-content {
-            color: #333;
-            font-size: 16px;
-        }
-        .distance-text {
-            color: #ff4c4c;
-            font-size: 18px;
+            background-color: #4682b4;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -128,11 +108,13 @@ elif auth_option == "Sign In":
             st.sidebar.error("❌ Invalid Username or Password!")
 
 # Main App Page - Blood Bank Finder
+st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
+st_lottie(lottie_animation, height=200)
+
+# Blood Bank Finder Section
 st.title("Find Blood Banks in Karachi")
 
-st.json(lottie_blood_bank)  # Displaying the Lottie animation
-
-# User Input for Location and Blood Group
+# Data for Blood Banks with 20 Locations
 blood_banks = pd.DataFrame([
     {"name": "Central Blood Bank", "location": "Saddar", "coordinates": (24.8607, 67.0011), "blood_groups": ["A+", "O+"]},
     {"name": "City Blood Bank", "location": "Clifton", "coordinates": (24.8138, 67.0300), "blood_groups": ["B+", "AB+"]},
@@ -151,29 +133,29 @@ blood_banks = pd.DataFrame([
     {"name": "Holy Family Blood Bank", "location": "Naya Nazimabad", "coordinates": (24.9271, 67.0505), "blood_groups": ["O+", "AB-"]},
     {"name": "Tahir Blood Bank", "location": "Gulistan-e-Johar", "coordinates": (24.9286, 67.1201), "blood_groups": ["B-", "O+"]},
     {"name": "Pakistan Institute of Blood Transfusion", "location": "Saddar", "coordinates": (24.8522, 67.0202), "blood_groups": ["A-", "B+"]},
-    {"name": "Sindh Blood Transfusion Authority", "location": "Karachi", "coordinates": (24.9030, 67.0542), "blood_groups": ["A+", "B+"]},
-    {"name": "Zainab Blood Bank", "location": "Korangi", "coordinates": (24.8231, 67.1189), "blood_groups": ["O-", "A+"]},
-    {"name": "Dawood Blood Bank", "location": "Clifton", "coordinates": (24.8052, 67.0321), "blood_groups": ["AB-", "B+"]},
-
+    {"name": "Sindh Blood Transfusion Authority", "location": "Karachi", "coordinates": (24.9030, 67.0501), "blood_groups": ["AB-", "O+"]},
 ])
 
-user_location = st.selectbox("Select Your Location", blood_banks['location'].unique())
-selected_blood_group = st.selectbox("Select Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+# User Input for Blood Bank Finder (Always Visible)
+with st.form("blood_bank_form"):
+    location = st.selectbox("📍 Select Your Location", blood_banks["location"].unique())
+    blood_group = st.selectbox("🩸 Select Required Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+    submitted = st.form_submit_button("🔍 Find Blood Bank")
 
-if st.button("Find Blood Banks"):
-    filtered_banks = blood_banks[blood_banks['blood_groups'].apply(lambda x: selected_blood_group in x)]
-    if filtered_banks.empty:
-        st.write("❌ No blood banks available for the selected blood group.")
+if submitted:
+    st.markdown(f"### Blood Banks in **{location}** for **{blood_group}**")
+    filtered_banks = blood_banks[blood_banks['location'] == location]
+    available_banks = filtered_banks[filtered_banks['blood_groups'].apply(lambda x: blood_group in x)]
+    
+    if available_banks.empty:
+        st.write("❌ No blood banks available with this blood group.")
     else:
-        for index, bank in filtered_banks.iterrows():
-            distance = geopy_distance.distance((24.8607, 67.0011), bank['coordinates']).km
-            st.markdown(
-                f"""
-                <div style="border: 2px solid #ff4c4c; border-radius: 10px; padding: 15px;">
-                    <h3 style="color: #ff4c4c;">{bank['name']} - {bank['location']}</h3>
-                    <p>🩸 Available Groups: {', '.join(bank['blood_groups'])}</p>
-                    <p><strong>Distance:</strong> {distance:.2f} km</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        for index, bank in available_banks.iterrows():
+            st.markdown(f"#### {bank['name']} - {bank['location']}")
+            st.write(f"📍 Coordinates: {bank['coordinates']}")
+            st.write("🩸 Blood Groups Available: " + ", ".join(bank['blood_groups']))
+            st.write("---")
+
+# Optional Log Out Button if Logged In
+if "logged_in_user" in st.session_state:
+    st.sidebar.button("Log Out", on_click=lambda: st.session_state.pop("logged_in_user"))
