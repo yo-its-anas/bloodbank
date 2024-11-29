@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import geopy.distance as geopy_distance
+from streamlit_lottie import st_lottie
 import requests
 import random
 import string
@@ -113,6 +114,7 @@ elif auth_option == "Sign In":
         signin_submit = st.form_submit_button("Sign In")
 
     if signin_submit:
+        # Dummy validation: Accept any non-empty username and password
         if username_input and password_input:
             st.session_state["logged_in_user"] = username_input
             st.sidebar.success(f"👋 Welcome, {username_input}!")
@@ -123,7 +125,7 @@ elif auth_option == "Sign In":
 
 # Main App Page - Blood Bank Finder
 st.markdown(f"### Welcome to Karachi Blood Bank Finder 🩸")
-st.json(lottie_animation)  # This will load the old animation
+st_lottie(lottie_animation, height=200)
 
 # Blood Bank Finder Section
 st.title("Find Blood Banks in Karachi")
@@ -163,7 +165,8 @@ if submit_button:
         st.subheader("Available Blood Banks near you:")
         available_banks = blood_banks[blood_banks["blood_groups"].apply(lambda x: blood_group_needed in x)]
         if available_banks.empty:
-            st.markdown(f"🔍 Searching for nearest blood banks with **{blood_group_needed}**...")
+            st.markdown(f"❌ No blood banks available with **{blood_group_needed}** in your location.")
+            st.markdown("However, here are the nearest blood banks:")
             
             # Calculate nearest available blood banks
             available_banks = blood_banks.copy()
