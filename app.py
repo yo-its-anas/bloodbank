@@ -153,20 +153,31 @@ blood_banks = pd.DataFrame([
 ])
 
 
-# User Input for Blood Bank Finder (Simplified Selection Box Only)
+
+
+# Karachi's famous locations
+karachi_locations = ["Saddar", "Gulshan-e-Iqbal", "North Nazimabad", "Clifton", "Garden"]
+
+# User Input for Blood Bank Finder
 with st.form("blood_search"):
+    user_location = st.selectbox("Select Your Location in Karachi", karachi_locations)
     blood_group_needed = st.selectbox("Select Required Blood Group", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
     submit_button = st.form_submit_button("Search Blood Banks")
 
-
-# Display available blood banks
 if submit_button:
-    if user_location.strip():
-        st.subheader("Available Blood Banks near you:")
-        available_banks = blood_banks[blood_banks["blood_groups"].apply(lambda x: blood_group_needed in x)]
-        if available_banks.empty:
-            st.markdown(f"❌ No blood banks available with **{blood_group_needed}** in your location.")
-            st.markdown("However, here are the nearest blood banks:")
+    # Filter blood banks based on user input
+    available_blood_banks = [
+        bank for bank in blood_banks
+        if bank["location"] == user_location and blood_group_needed in bank["blood_groups"]
+    ]
+    
+    if available_blood_banks:
+        st.success("Available Blood Banks:")
+        for bank in available_blood_banks:
+            st.write(f"Name: {bank['name']} - Location: {bank['location']}")
+    else:
+        st.error("No blood banks found matching your criteria.")
+
             
             # Calculate nearest available blood banks
             available_banks = blood_banks.copy()
